@@ -10,7 +10,7 @@ library(cfbfastR)
 game_results2019_df <- vroom('2019GameResults.csv')
 
 
-## Bradley Terry Model ##
+## Bradley Terry Model Exploration ##
 data("baseball", package = 'BradleyTerry2')
 head(baseball)
 
@@ -27,7 +27,7 @@ BTabilities(baseballModel2)
 
 
 
-### Bradley Terry with 2019 College Football Data ###
+### Simple Bradley Terry with 2019 College Football Data ###
 game_results2019_df <- game_results2019_df %>%
   filter(
     HomeClassification == 'fbs' & AwayClassification == 'fbs'
@@ -62,9 +62,11 @@ team_ranking <- as.data.frame(abilities) %>%
 team_ranking
 
 
+  # Bradley Terry Model with Total Expected Points Added #
 cfb_data2019 <- load_cfb_pbp(2019)
 head(cfb_data2019)
 
+  # Filter for Total EPA only last play #
 unique_phrase <- unique(cfb_data2019$play_type)
 endgame2019 <- cfb_data2019 %>%
   group_by(game_id) %>%
@@ -72,6 +74,7 @@ endgame2019 <- cfb_data2019 %>%
   ungroup()
 
 
+  # Merge pbp and game results data
 small2019 <- small2019 %>%
   mutate(GameKey = paste(Week, pmin(HomeTeam, AwayTeam), pmax(HomeTeam, AwayTeam), sep = "_"))
 
@@ -81,6 +84,7 @@ endgame2019 <- endgame2019 %>%
 expected_dif_df <- small2019 %>%
   left_join(endgame2019, by = "GameKey")
 
+  # Original & more complex BT mods
 bt1_football_mod <- BTm(cbind(HomeWin, AwayWin), HomeFactor, AwayFactor,
                         data = expected_dif_df)
 
@@ -94,4 +98,4 @@ abilities2 <- BTabilities(bt2_football_mod)
 ### Compare Performance of BT Model with Moneyline 2023 ###
 # Data
 cfb_data2023 <- load_cfb_pbp(2023)
-bet_data <- vroom('ncaaf_game_scores_1g_2023_sample.csv')
+bet_data2023 <- vroom('bet_data.csv')
